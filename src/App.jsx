@@ -8,24 +8,17 @@ function App() {
   const [wicket, setWicket] = useState(0);
   const [over, setOver] = useState(0);
   const [ball, setBall] = useState(0);
-
-  const players = [
-    { id: 1, name: 'SKY', score: 0, isOut: false },
-    { id: 2, name: 'Auto', score: 0, isOut: false },
-    { id: 3, name: 'Cat', score: 0, isOut: false },
-    { id: 4, name: 'Sharath', score: 0, isOut: false },
-    { id: 5, name: 'Pathirani', score: 0, isOut: false },
-    {id: 6, name:'bot bala',score: 0, isOut:false},
-  ];
-
-  const [playerStats, setPlayerStats] = useState(players);
+  const [dot, setDot] = useState(0);
+  const [idx, setIdx] = useState(1);
+  const [playerStats, setPlayerStats] = useState([]);
+  const [inputValue, setInputValue] = useState("");
 
   const updateOver = () => {
     setBall((prev) => prev + 1);
     if (ball + 1 === 6) {
       setOver((prev) => prev + 1);
       setBall(0);
-      setTotal((prevTotal) => prevTotal + extra); 
+      setTotal((prevTotal) => prevTotal + extra);
     }
   };
 
@@ -33,7 +26,7 @@ function App() {
     setPlayerStats((prevStats) =>
       prevStats.map((player) =>
         player.id === playerId && !player.isOut
-          ? { ...player, score: player.score + runs }
+          ? { ...player, score: player.score + runs, ballsFaced: player.ballsFaced + 1 }
           : player
       )
     );
@@ -60,22 +53,63 @@ function App() {
     setEndScore(total + extra);
   };
 
+  const handleDots = (playerId) => {
+    handleScore(playerId, 0);
+  };
+
   const resetGame = () => {
-    setPlayerStats(players);
+    setPlayerStats([]);
     setTotal(0);
     setExtra(0);
     setEndScore(0);
     setWicket(0);
     setOver(0);
     setBall(0);
+    setIdx(1);
+  };
+
+  const st = {
+    padding: '10px 15px',
+    fontSize: '1rem',
+    width: '250px',
+    borderColor : 'black',
+    marginBottom: '10px',
+    border: '1px solid #ccc',
+    borderRadius: '5px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
+  }
+
+  const addPlayer = () => {
+    if (inputValue.trim() != "") {
+      setPlayerStats((prevPlayers) => [
+        ...prevPlayers,
+        { id: idx, name: inputValue, score: 0, isOut: false, ballsFaced: 0 }
+      ]);
+      setIdx((prevIdx) => prevIdx + 1);
+      setInputValue("");
+    } else {
+      console.log("Enter a player name to create a scoreboard");
+    }
   };
 
   return (
     <div className="app-container">
       <header>
-        <h1>Street Cricket Warriors</h1>
+        <h1>Lions King</h1>
         <h2>Score Board</h2>
       </header>
+      <div>
+      <input 
+  type="text"
+  value={inputValue}
+  onChange={(e) => setInputValue(e.target.value)}
+  style={st}
+  placeholder="Enter player name"
+/>
+
+        <button className = "spec" onClick={addPlayer}>Add Batsman</button>
+      </div>
       <main>
         <div className="score-info">
           <p>Total Score: {total}</p>
@@ -89,6 +123,7 @@ function App() {
             <div key={player.id} className="player-card">
               <h3>{player.name}</h3>
               <p>Score: {player.score}</p>
+              <p>Balls Faced: {player.ballsFaced}</p>
               <p>Status: {player.isOut ? 'Out' : 'Not Out'}</p>
               {!player.isOut && (
                 <div className="button-group">
@@ -97,10 +132,11 @@ function App() {
                   <button onClick={() => handleScore(player.id, 4)}>Four</button>
                   <button onClick={() => handleScore(player.id, 6)}>Six</button>
                   <button onClick={() => handleOut(player.id)}>Out</button>
+                  <button onClick={() => handleDots(player.id)}>Dot</button>
                 </div>
               )}
-              {player.isOut && player.score == 0 && <p>Vaathu Mutta</p>}
-              {player.isOut && <p>Player is out </p>}
+              {player.isOut && player.score === 0 && <p>Ponna vegathulaiye thirumba vandhuta</p>}
+              {player.isOut && <p>Player is out</p>}
             </div>
           ))}
         </div>
