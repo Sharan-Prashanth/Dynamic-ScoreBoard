@@ -8,10 +8,10 @@ function App() {
   const [wicket, setWicket] = useState(0);
   const [over, setOver] = useState(0);
   const [ball, setBall] = useState(0);
-  const [dot, setDot] = useState(0);
   const [idx, setIdx] = useState(1);
   const [playerStats, setPlayerStats] = useState([]);
   const [inputValue, setInputValue] = useState("");
+  const [history, setHistory] = useState([]);
 
   const updateOver = () => {
     setBall((prev) => prev + 1);
@@ -19,6 +19,7 @@ function App() {
       setOver((prev) => prev + 1);
       setBall(0);
       setTotal((prevTotal) => prevTotal + extra);
+      setHistory((prevHistory) => [...prevHistory, 'End of Over<br/>']); // Add end of over line with a line break
     }
   };
 
@@ -32,6 +33,7 @@ function App() {
     );
     setTotal((prevTotal) => prevTotal + runs);
     updateOver();
+    setHistory((prevHistory) => [...prevHistory, runs]); // Update history with the new run
   };
 
   const handleOut = (playerId) => {
@@ -42,22 +44,26 @@ function App() {
     );
     setWicket((prev) => prev + 1);
     updateOver();
+    setHistory((prevHistory) => [...prevHistory, 'Out']); 
   };
 
   const handleExtras = () => {
     setExtra((prevExtra) => prevExtra + 1);
     setTotal((prevTotal) => prevTotal + 1);
+    setHistory((prevHistory) => [...prevHistory, 'wd']); // Update history with the extra event
+  };
+
+  const handleDots = (playerId) => {
+    handleScore(playerId, 0);
+    setHistory((prevHistory) => [...prevHistory, 'Dot']); // Update history with the dot event
   };
 
   const endGame = () => {
     setEndScore(total + extra);
   };
 
-  const handleDots = (playerId) => {
-    handleScore(playerId, 0);
-  };
-
   const resetGame = () => {
+    alert("Are you sure you want to reset the board?");
     setPlayerStats([]);
     setTotal(0);
     setExtra(0);
@@ -66,22 +72,23 @@ function App() {
     setOver(0);
     setBall(0);
     setIdx(1);
+    setHistory([]); 
   };
 
   const st = {
     padding: '10px 15px',
     fontSize: '1rem',
     width: '250px',
-    borderColor : 'black',
+    borderColor: 'black',
     marginBottom: '10px',
     border: '1px solid #ccc',
     borderRadius: '5px',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     transition: 'border-color 0.3s ease, box-shadow 0.3s ease',
-  }
+  };
 
   const addPlayer = () => {
-    if (inputValue.trim() != "") {
+    if (inputValue.trim() !== "") {
       setPlayerStats((prevPlayers) => [
         ...prevPlayers,
         { id: idx, name: inputValue, score: 0, isOut: false, ballsFaced: 0 }
@@ -100,15 +107,14 @@ function App() {
         <h2>Score Board</h2>
       </header>
       <div>
-      <input 
-  type="text"
-  value={inputValue}
-  onChange={(e) => setInputValue(e.target.value)}
-  style={st}
-  placeholder="Enter player name"
-/>
-
-        <button className = "spec" onClick={addPlayer}>Add Batsman</button>
+        <input 
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          style={st}
+          placeholder="Enter player name"
+        />
+        <button className="spec" onClick={addPlayer}>Add Batsman</button>
       </div>
       <main>
         <div className="score-info">
@@ -116,6 +122,12 @@ function App() {
           <p>Wickets: {wicket}</p>
           <p>Overs: {over}.{ball}</p>
           <p>Extras: {extra}</p>
+          <p>History:</p>
+          <div>
+            {history.map((entry, index) => (
+              <div key={index} dangerouslySetInnerHTML={{ __html: entry === 'End of Over<br/>' ? entry : `${entry}<br/>` }} />
+            ))}
+          </div>
         </div>
 
         <div className="player-section">
@@ -140,7 +152,6 @@ function App() {
             </div>
           ))}
         </div>
-
         <div className="action-buttons">
           <button onClick={handleExtras}>Add Extra</button>
           <button onClick={resetGame}>Reset Game</button>
